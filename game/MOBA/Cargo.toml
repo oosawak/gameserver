@@ -1,0 +1,21 @@
+[workspace]
+
+[package]
+name = "moba-sample"
+version = "0.1.0"
+edition = "2021"
+authors = ["oosawak"]
+
+[dependencies]
+gameserver-core = { path = "../../core" }
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.21"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.11"
+futures = "0.3"
+
+[[bin]]
+name = "moba-server"
+path = "src/main.rs"

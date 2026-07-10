@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameServer Docs | MOBA サーバーの仕組みと使い方</title>
+    <meta name="description" content="Rust で動く MOBA サーバーの仕組み、起動方法、使い方をまとめたドキュメント。動画デモ付き。">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-copy">
+            <p class="eyebrow">GameServer Docs</p>
+            <h1>MOBA サーバーの仕組みと使い方</h1>
+            <p class="lead">
+                Rust の WebSocket サーバーとブラウザクライアントで動く、シンプルなリアルタイム対戦ゲームです。
+                このページでは、起動方法、通信の流れ、操作方法、そして動画デモをまとめています。
+            </p>
+            <div class="hero-actions">
+                <a class="button primary" href="#start">起動手順を見る</a>
+                <a class="button ghost" href="#video">動画デモを見る</a>
+            </div>
+        </div>
+        <aside class="hero-card">
+            <div class="stat">
+                <span class="stat-label">ゲーム</span>
+                <span class="stat-value">MOBA Sample</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">サーバー</span>
+                <span class="stat-value">Rust + WebSocket</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">クライアント</span>
+                <span class="stat-value">HTML + Canvas + JS</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">動画</span>
+                <span class="stat-value">GAMESERVER001.mp4</span>
+            </div>
+        </aside>
+    </header>
+
+    <main>
+        <section class="section" id="overview">
+            <div class="section-head">
+                <p class="eyebrow">Overview</p>
+                <h2>サーバーの仕組み</h2>
+            </div>
+            <div class="grid three">
+                <article class="card">
+                    <h3>1. サーバーが権威を持つ</h3>
+                    <p>
+                        プレイヤーの位置、弾、HP、衝突判定はサーバー側が管理します。
+                        クライアントは入力を送るだけで、最終状態はサーバーの `state` を受け取って描画します。
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>2. 60Hz のゲームループ</h3>
+                    <p>
+                        物理更新は `game_loop()` で 60Hz で回り、移動、衝突、画面外削除を処理します。
+                        状態配信は `MOBA_STATE_SEND_INTERVAL_MS` で間引きできます。
+                    </p>
+                </article>
+                <article class="card">
+                    <h3>3. WebSocket で同期</h3>
+                    <p>
+                        クライアントは `join`、`input`、`clear_participants`、`set_speed`、`set_auto_move`
+                        の JSON メッセージを送信します。サーバーは `joined` と `state` を返します。
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="architecture">
+            <div class="section-head">
+                <p class="eyebrow">Flow</p>
+                <h2>処理の流れ</h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <span class="timeline-step">01</span>
+                    <div>
+                        <h3>ブラウザ起動</h3>
+                        <p>HTML と JavaScript のクライアントを `http.server` で配信します。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-step">02</span>
+                    <div>
+                        <h3>WebSocket 接続</h3>
+                        <p>クライアントが `ws://localhost:8888` に接続し、プレイヤー参加を送ります。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-step">03</span>
+                    <div>
+                        <h3>サーバーが状態更新</h3>
+                        <p>入力を反映し、移動、弾の生成、衝突判定、画面外削除を行います。</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <span class="timeline-step">04</span>
+                    <div>
+                        <h3>クライアントが描画</h3>
+                        <p>Canvas に三角形のプレイヤー、弾、HP、プレイヤー一覧を表示します。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section split" id="start">
+            <div>
+                <div class="section-head">
+                    <p class="eyebrow">How To Run</p>
+                    <h2>起動方法</h2>
+                </div>
+                <div class="card">
+                    <h3>1. ゲームサーバーを起動</h3>
+                    <pre><code>cd /home/oosawak/Workspace/gameserver/game/MOBA
+cargo run --release --bin moba-server</code></pre>
+                    <p class="muted">待ち受け先は `0.0.0.0:8888` です。ブラウザ側の WebSocket もこのポートに接続します。</p>
+                </div>
+                <div class="card">
+                    <h3>2. HTTP サーバーを起動</h3>
+                    <pre><code>cd /home/oosawak/Workspace/gameserver/game/MOBA/www
+python3 -m http.server 8889</code></pre>
+                    <p class="muted">ブラウザで `http://localhost:8889` を開きます。</p>
+                </div>
+                <div class="card">
+                    <h3>3. プレイ開始</h3>
+                    <ul class="list">
+                        <li>プレイヤー名を入力して「参加」を押します。</li>
+                        <li>WASD または カーソルキーで移動できます。</li>
+                        <li>SPACE で弾を撃ちます。</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="sticky-panel">
+                <div class="card">
+                    <h3>ポート一覧</h3>
+                    <ul class="list compact">
+                        <li><strong>8888</strong> - WebSocket ゲームサーバー</li>
+                        <li><strong>8889</strong> - ブラウザ用 HTTP サーバー</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>環境変数</h3>
+                    <ul class="list compact">
+                        <li><code>MOBA_PLAYER_SPEED</code> - 自機の速度</li>
+                        <li><code>MOBA_STATE_SEND_INTERVAL_MS</code> - 状態送信間隔</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="controls">
+            <div class="section-head">
+                <p class="eyebrow">Controls</p>
+                <h2>画面の使い方</h2>
+            </div>
+            <div class="grid two">
+                <article class="card">
+                    <h3>プレイヤー操作</h3>
+                    <ul class="list">
+                        <li>WASD / 矢印キー: 移動</li>
+                        <li>SPACE: シュート</li>
+                        <li>自分の向きは三角形の先端で確認できます</li>
+                    </ul>
+                </article>
+                <article class="card">
+                    <h3>画面右の設定</h3>
+                    <ul class="list">
+                        <li>入力送信間隔を調整できます</li>
+                        <li>UI 更新間隔を調整できます</li>
+                        <li>自機スピードを変更できます</li>
+                        <li>プレイヤーごとの自動移動を切り替えられます</li>
+                        <li>参加者クリアで全員を消せます</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="video">
+            <div class="section-head">
+                <p class="eyebrow">Demo</p>
+                <h2>動画デモ</h2>
+            </div>
+            <div class="video-frame card">
+                <video controls preload="metadata" playsinline poster="">
+                    <source src="./GAMESERVER001.mp4" type="video/mp4">
+                    お使いのブラウザは video タグをサポートしていません。
+                </video>
+                <p class="muted">
+                    この動画は `docs/GAMESERVER001.mp4` を使用しています。GitHub Pages でも同じパスで公開できます。
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>GitHub Pages では `docs/` を公開元に設定してください。</p>
+    </footer>
+</body>
+</html>

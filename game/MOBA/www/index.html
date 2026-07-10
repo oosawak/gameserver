@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 MOBA Game - シンプル対戦ゲーム</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            width: 100%;
+        }
+
+        canvas {
+            background: #000;
+            border: 3px solid #00ff00;
+            border-radius: 8px;
+            display: block;
+            max-width: 100%;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .controls h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            width: 200px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #00cc00;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 200px;
+        }
+
+        .stats h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #00ff00;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #00ff00;
+            font-family: monospace;
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            width: 100%;
+            transition: width 0.1s ease;
+        }
+
+        .controls-hint {
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        .settings {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.18);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .settings h4 {
+            margin: 0 0 10px 0;
+            text-align: center;
+            color: #00ff00;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 0.95em;
+        }
+
+        .setting-row input {
+            transform: scale(1.1);
+        }
+
+        .rate-control {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .rate-control input[type="range"] {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .rate-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .speed-control {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .speed-control input[type="range"] {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status.connected {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .status.disconnected {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+
+        .player-list {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .player-list h4 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+        }
+
+        .player-item {
+            padding: 5px;
+            margin: 5px 0;
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 3px solid #00ff00;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 800px) {
+            .container {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            input[type="text"] {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 MOBA Game</h1>
+
+    <div class="container">
+        <div class="game-area">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+            <div class="controls">
+                <h3>🎮 ゲーム参加</h3>
+                <div class="input-group">
+                    <input type="text" id="playerName" placeholder="プレイヤー名を入力" value="Player1">
+                    <button id="joinBtn">参加</button>
+                    <button id="leaveBtn" disabled>退出</button>
+                    <button id="clearBtn" disabled>参加者クリア</button>
+                </div>
+                <div class="controls-hint">
+                    ⌨️ WASD: 移動 | SPACE: シュート
+                </div>
+                <div class="settings">
+                    <h4>⚙️ 表示・負荷設定</h4>
+                    <div class="rate-control">
+                        <div class="rate-label">
+                            <span>入力送信間隔</span>
+                            <span id="inputIntervalValue">50ms</span>
+                        </div>
+                        <input type="range" id="inputIntervalRange" min="0" max="200" step="10" value="50">
+                    </div>
+                    <div class="rate-control">
+                        <div class="rate-label">
+                            <span>UI更新間隔</span>
+                            <span id="uiIntervalValue">150ms</span>
+                        </div>
+                        <input type="range" id="uiIntervalRange" min="0" max="500" step="25" value="150">
+                    </div>
+                    <div class="speed-control">
+                        <div class="rate-label">
+                            <span>自機スピード</span>
+                            <span id="speedValue">400</span>
+                        </div>
+                        <input type="range" id="speedRange" min="100" max="800" step="10" value="400">
+                    </div>
+                    <label class="setting-row">
+                        <input type="checkbox" id="toggleGridCache" checked>
+                        グリッド描画をキャッシュする
+                    </label>
+                </div>
+                <div id="status" class="status disconnected">● オフライン</div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <h3>📊 ゲーム情報</h3>
+
+            <div class="stat-item">
+                <span class="stat-label">Tick:</span>
+                <span class="stat-value" id="tick">0</span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">プレイヤー数:</span>
+                <span class="stat-value" id="playerCount">0</span>
+            </div>
+
+            <div class="stat-item">
+                <span class="stat-label">あなたのHP:</span>
+            </div>
+            <div class="health-bar">
+                <div class="health-fill" id="healthFill" style="width: 100%"></div>
+            </div>
+            <div class="stat-value" id="healthText">100 / 100</div>
+
+            <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 15px 0;">
+
+            <div class="player-list">
+                <h4>👥 プレイヤー一覧</h4>
+                <div id="playersList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="client.js"></script>
+</body>
+</html>
