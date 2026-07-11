@@ -1,3 +1,20 @@
+
+# gameserver
+
+A lightweight and extensible multiplayer game server.  
+This project aims to provide a simple foundation for real-time communication, room management, and session handling.
+
+## Features
+- Multiplayer game server foundation
+- Real-time communication (e.g. WebSocket / TCP)
+- Room lifecycle management (create/join/leave)
+- Scalable architecture for future growth
+
+## Keywords
+gameserver, game server, multiplayer, realtime, websocket, matchmaking
+
+
+
 # Game Server - 共通ゲームエンジン
 
 Rust + WASM + WebRTC を使用した、複数ジャンルのリアルタイム対戦ゲームを同一基盤で構築するゲームエンジン。
